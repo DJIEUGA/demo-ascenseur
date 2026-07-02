@@ -28,7 +28,7 @@ export default function App() {
         <div className="flex-1 flex flex-col gap-4 overflow-hidden">
           {/* L'Immeuble */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <h2 className="text-xs font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">// Vue de l'Immeuble</h2>
+            <h2 className="text-xs font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">Vue de l'Immeuble</h2>
             <div className="flex border border-slate-800 rounded-xl overflow-hidden bg-slate-950 p-2 gap-4 flex-1 items-center justify-between">
               {/* Grille des étages */}
               <div className="flex-1 flex flex-col justify-between h-full">
