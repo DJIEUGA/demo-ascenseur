@@ -1,4 +1,4 @@
-# 🛗 Simulateur d'Ascenseur Intelligent
+# Simulateur d'Ascenseur Intelligent
 
 Une application web interactive et moderne de simulation d'ascenseur pour un immeuble de **10 étages** (du **RDC au Niveau 9**).
 
@@ -83,7 +83,7 @@ L'application suit une architecture à responsabilités séparées :
 
 ---
 
-# 📐 Architecture du projet
+# Architecture du projet
 
 Le projet applique une séparation stricte des préoccupations grâce à une architecture modulaire :
 
@@ -152,7 +152,7 @@ Chaque arrêt déclenche :
 
 ## Fonctionnalités bonus
 
-### ⏸️ Pause / Reprise
+### Pause / Reprise
 
 Permet :
 
@@ -245,5 +245,3 @@ Nouveaux besoins :
 - Tailwind CSS v4
 
 ---
-
-Développé avec une approche **performance-first**, architecture propre et expérience utilisateur moderne.
