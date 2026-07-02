@@ -3,11 +3,13 @@
   getNextDirection: (currentFloor, currentDirection, requests) => {
     if (requests.length === 0) return 'IDLE';
 
+    // Continue à monter s'il y a des demandes en haut
     if (currentDirection === 'UP') {
       const hasMoreUp = requests.some(floor => floor > currentFloor);
       if (hasMoreUp) return 'UP';
     }
     
+    // Continue à descendre s'il y a des demandes en bas
     if (currentDirection === 'DOWN') {
       const hasMoreDown = requests.some(floor => floor < currentFloor);
       if (hasMoreDown) return 'DOWN';

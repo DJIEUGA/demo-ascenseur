@@ -2,21 +2,37 @@
 import { ElevatorStrategy } from '../core/elevatorStrategy';
 
 export const useElevatorStore = create((set, get) => ({
+  // États existants
   currentFloor: 0,
-  direction: 'IDLE',       // 'UP', 'DOWN', 'IDLE'
-  motionStatus: 'STOPPED', // 'MOVING', 'STOPPED', 'DOORS_OPEN'
+  direction: 'IDLE',       
+  motionStatus: 'STOPPED', 
   requests: [],
 
+  // ÉTATS BONUS
+  isPaused: false,
+  speedMultiplier: 1, // 1x, 2x, 4x
+  logs: [],
+
+  // CONTROLEURS BONUS
+  togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
+  setSpeedMultiplier: (multiplier) => set({ speedMultiplier: multiplier }),
+  addLog: (message) => set((state) => ({
+    logs: [`[${new Date().toLocaleTimeString()}] ${message}`, ...state.logs.slice(0, 19)] // Garde les 20 derniers logs
+  })),
+
+  // MUTATIONS EXISTANTES OPTIMISÉES AVEC LOGS
   addRequest: (floor) => set((state) => {
     if (state.requests.includes(floor)) return state;
     const newRequests = [...state.requests, floor];
     
-    // Si l'ascenseur était arrêté, on calcule immédiatement sa prochaine direction
+    get().addLog(`Nouvel appel enregistré pour le Niveau ${floor}`);
+
     let nextDir = state.direction;
     let nextStatus = state.motionStatus;
     if (state.direction === 'IDLE') {
       nextDir = ElevatorStrategy.getNextDirection(state.currentFloor, state.direction, newRequests);
       nextStatus = nextDir !== 'IDLE' ? 'MOVING' : 'STOPPED';
+      if (nextDir !== 'IDLE') get().addLog(`Départ de la cabine en direction : ${nextDir}`);
     }
 
     return { 
@@ -26,43 +42,42 @@ export const useElevatorStore = create((set, get) => ({
     };
   }),
 
-  removeRequest: (floor) => set((state) => {
-    const newRequests = state.requests.filter((r) => r !== floor);
-    return { requests: newRequests };
-  }),
+  removeRequest: (floor) => set((state) => ({
+    requests: state.requests.filter((r) => r !== floor)
+  })),
 
-  setDirection: (direction) => set({ direction }),
-  setMotionStatus: (motionStatus) => set({ motionStatus }),
-
-  // Le moteur appelle cette fonction à chaque cycle (Tick)
   step: () => {
-    const { currentFloor, direction, requests, motionStatus } = get();
+    const { currentFloor, direction, requests, motionStatus, isPaused, speedMultiplier } = get();
 
-    if (motionStatus === 'DOORS_OPEN') return;
+    if (isPaused || motionStatus === 'DOORS_OPEN') return;
 
-    // 1. Si on doit s'arrêter à cet étage
     if (ElevatorStrategy.shouldStopAt(currentFloor, requests)) {
       set({ motionStatus: 'DOORS_OPEN' });
       get().removeRequest(currentFloor);
+      get().addLog(`Arrivée au Niveau ${currentFloor} - Ouverture des portes`);
 
-      // Simuler l'attente des portes, puis recalculer la suite
+      // Le temps d'ouverture s'adapte aussi à la vitesse choisie !
       setTimeout(() => {
         const updatedRequests = get().requests;
         const nextDir = ElevatorStrategy.getNextDirection(currentFloor, direction, updatedRequests);
+        
         set({ 
           motionStatus: nextDir !== 'IDLE' ? 'MOVING' : 'STOPPED',
           direction: nextDir
         });
-      }, 2500);
+        get().addLog(`Fermeture des portes. Prochaine action : ${nextDir}`);
+      }, 2500 / speedMultiplier);
       return;
     }
 
-    // 2. Sinon, on continue d'avancer dans la direction actuelle
     if (motionStatus === 'MOVING') {
-      if (direction === 'UP' && currentFloor < 9) {
-        set({ currentFloor: currentFloor + 1 });
-      } else if (direction === 'DOWN' && currentFloor > 0) {
-        set({ currentFloor: currentFloor - 1 });
+      let nextFloor = currentFloor;
+      if (direction === 'UP' && currentFloor < 9) nextFloor = currentFloor + 1;
+      else if (direction === 'DOWN' && currentFloor > 0) nextFloor = currentFloor - 1;
+      
+      if (nextFloor !== currentFloor) {
+        set({ currentFloor: nextFloor });
+        get().addLog(`Passage au Niveau ${nextFloor}`);
       }
     }
   }
